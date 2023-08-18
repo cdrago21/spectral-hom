@@ -1,1 +1,1 @@
-# -Hong-Ou-Mandel-Interference
+# Hong-Ou-Mandel-Interference
