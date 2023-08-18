@@ -1,1 +1,1 @@
-custom_poling@git+https://git@github.com/abranczyk /custom_poling@main
+custom-poling @ git+https://github.com/abranczyk/custom-poling@main
