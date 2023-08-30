@@ -141,6 +141,8 @@ class IndependentGaussianCoincidence:
         ax[2].set_xlabel(r"$\tau$ (ps)", fontsize=fs)
         ax[2].set_ylabel(r"$p_\mathrm{II}^\mathrm{Gauss}$", fontsize=fs)
         ax[2].tick_params(axis='both', labelsize=ts)
+        ax[2].axhline(0, color='black', alpha=0.5)
+        ax[2].axvline(0, color='black', alpha=0.5)
 
         plt.tight_layout()
         fig.savefig('figures/Fig1.png', dpi=300, bbox_inches='tight')
