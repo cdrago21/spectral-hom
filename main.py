@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib as mpl
-import pylab as plt
+import matplotlib.pylab as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.constants import speed_of_light
 
 twopi = 2 * np.pi
@@ -12,6 +13,7 @@ mpl.rcParams['mathtext.fontset'] = 'cm'
 mpl.rcParams['axes.unicode_minus'] = False
 fs = 16  # font size
 ts = 12  # tick size
+
 
 class GaussianPulse:
     """class for a Gaussian pulse"""
@@ -119,12 +121,12 @@ class IndependentGaussianCoincidence:
         ax[0].tick_params(axis='both', labelsize=ts)
         ax[0].legend()
 
-        ax[1].plot((ww - self.gaussian_a.omega_c) * 1e-9, np.abs(self.gaussian_a.amplitude_freq(ww)) ** 2,
+        ax[1].plot((ww - self.gaussian_a.omega_c) * 1e-9 / twopi, np.abs(self.gaussian_a.amplitude_freq(ww)) ** 2,
                    linewidth=2,
                    label=r'$|\phi(\omega)|^2$',
                    color='black',
                    )
-        ax[1].plot((ww - self.gaussian_a.omega_c) * 1e-9, np.abs(self.gaussian_b.amplitude_freq(ww)) ** 2,
+        ax[1].plot((ww - self.gaussian_a.omega_c) * 1e-9 / twopi, np.abs(self.gaussian_b.amplitude_freq(ww)) ** 2,
                    linewidth=2,
                    label=r'$|\varphi(\omega)|^2$',
                    color='red',
@@ -145,5 +147,110 @@ class IndependentGaussianCoincidence:
         ax[2].axvline(0, color='black', alpha=0.5)
 
         plt.tight_layout()
-        fig.savefig('figures/Fig1.png', dpi=300, bbox_inches='tight')
+        fig.savefig('figures/fig2.png', dpi=300, bbox_inches='tight')
+        plt.show()
+
+
+
+
+
+
+class DoubleGaussianJSA:
+    """class for a double Gaussian joint-spectral amplitude"""
+
+    def __init__(self, param_dict):
+        """Constructor for the double Gaussian joint-spectral amplitude class.
+        Args:
+            param_dict (dict): dictionary containing the necessary parameters to perform a calculation:
+                - lambda_c (float): central wavelength of the photon pairs (nm)
+                - pulse_duration (float): effective pulse duration set by T_p  (ps)
+                - coherent_time (float): coherence  time set by T_c  (ps)
+        """
+        self.lambda_c = param_dict["lambda_c"]
+        self.pulse_duration = param_dict["pulse_duration"]
+        self.coherence_time = param_dict["coherence_time"]
+
+        self.omega_c = None
+        self.T_p, self.T_c = None, None
+        self.freq_range = None
+        self.time_range = None
+
+        self.calculate_derived_parameters()
+
+    def calculate_derived_parameters(self):
+        # set center frequency (rad/s)
+        self.omega_c = twopi * speed_of_light * 1e9 / self.lambda_c
+
+        # set T_p and T_c (s)
+        self.T_p = self.pulse_duration * 1e-12
+        self.T_c = self.coherence_time * 1e-12
+
+        # set frequency range (rad/s)
+        self.freq_range = np.arange(self.omega_c - 2 / self.T_c, self.omega_c + 2 / self.T_c,
+                                    4 / self.T_c / 100)
+
+    def joint_spectral_amplitude(self, omega_1, omega_2):
+        """Amplitude of the gaussian pulse.
+
+        Args:
+            omega_1 (float): frequency (Hz)
+            omega_2 (float): frequency (Hz)
+        Returns:
+            array((len(omega_1), len(omega_2)): joint spectral amplitude of the double Gaussian
+        """
+        pre_factor = np.sqrt(self.T_p * self.T_c / np.pi)
+        left_term = np.exp(-(omega_1 - omega_2) ** 2 * self.T_c ** 2 / 4)
+        right_term = np.exp(-(omega_1 + omega_2 - 2 * self.omega_c) ** 2 * self.T_p ** 2 / 4)
+
+        return pre_factor * left_term * right_term
+
+
+class DoubleGaussianCoincidence:
+    """class for the coincidence probability from independent photons with Gaussian amplitudes"""
+
+    def __init__(self, param_dict):
+        """Constructor for the double Gaussian coincidence class.
+
+        Args:
+            param_dict (dict): dictionary containing the necessary parameters to perform a
+                calculation:
+                - double_gaussian (class): double Gaussian class
+                - delay_range (float): delay range
+        """
+        self.double_gaussian = param_dict["double_gaussian"]
+
+        # set delay range (s)
+        self.delay_range = np.arange(-2.5 * self.double_gaussian.T_c, 2.5 * self.double_gaussian.T_c,
+                                     5 * self.double_gaussian.T_c / 100)
+
+    def coincidence_probability(self, delay):
+        return 1 / 2 - 1 / 2 * np.exp(- delay ** 2 / 2 / self.double_gaussian.T_c ** 2)
+
+    def plot_coincidence(self):
+        ww = self.double_gaussian.freq_range
+        W1, W2 = np.meshgrid(ww, ww)
+        JSA = self.double_gaussian.joint_spectral_amplitude(W1, W2)
+
+        fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(4, 8))
+        im0 = ax[0].pcolormesh((ww - self.double_gaussian.freq_range) * 1e-9 / twopi,
+                               (ww - self.double_gaussian.freq_range) * 1e-9 / twopi,
+                                np.abs(JSA) ** 2, shading='auto') #, norm=mpl.colors.LogNorm())
+        ax[0].set_xlabel(r"$(\omega_1 - \overline{\omega})/2\pi$ (GHz)", fontsize=fs)
+        ax[0].set_ylabel(r"$(\omega_2 - \overline{\omega})/2\pi$ (GHz)", fontsize=fs)
+        ax[0].set_title(r"Joint spectral intensity", fontsize=fs)
+        ax[0].tick_params(axis='both', labelsize=ts)
+
+        plt.colorbar(im0, cax=make_axes_locatable(ax[0]).append_axes("right", size="5%", pad=0.05))
+
+        ax[1].plot(self.delay_range * 1e-12, self.coincidence_probability(self.delay_range),
+                   linewidth=2,
+                   color='black')
+        ax[1].set_xlabel(r"$\tau$ (ps)", fontsize=fs)
+        ax[1].set_ylabel(r"$p_\mathrm{II}^\mathrm{Gauss}$", fontsize=fs)
+        ax[1].tick_params(axis='both', labelsize=ts)
+        ax[1].axhline(0, color='black', alpha=0.5)
+        ax[1].axvline(0, color='black', alpha=0.5)
+
+        plt.tight_layout()
+        fig.savefig('figures/fig3.png', dpi=300, bbox_inches='tight')
         plt.show()
