@@ -151,10 +151,6 @@ class IndependentGaussianCoincidence:
         plt.show()
 
 
-
-
-
-
 class DoubleGaussianJSA:
     """class for a double Gaussian joint-spectral amplitude"""
 
@@ -266,5 +262,5 @@ class DoubleGaussianCoincidence:
         ax[1].axvline(0, color='black', alpha=0.5)
 
         plt.tight_layout()
-        fig.savefig('figures/fig3.png', dpi=300, bbox_inches='tight')
+        fig.savefig('figures/fig2.png', dpi=300, bbox_inches='tight')
         plt.show()
