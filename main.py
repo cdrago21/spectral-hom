@@ -1,6 +1,6 @@
-import numpy as np
 import matplotlib as mpl
 import matplotlib.pylab as plt
+import numpy as np
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.constants import speed_of_light
 
@@ -11,8 +11,8 @@ cmfont = mpl.font_manager.FontProperties(fname=mpl.get_data_path() + '/fonts/ttf
 mpl.rcParams['font.serif'] = cmfont.get_name()
 mpl.rcParams['mathtext.fontset'] = 'cm'
 mpl.rcParams['axes.unicode_minus'] = False
-fs = 16  # font size
-ts = 12  # tick size
+fs = 14  # font size
+ts = 11  # tick size
 
 
 class GaussianPulse:
@@ -187,7 +187,7 @@ class DoubleGaussianJSA:
 
         # set frequency range (rad/s)
         self.freq_range = np.arange(self.omega_c - 2 / self.T_c, self.omega_c + 2 / self.T_c,
-                                    4 / self.T_c / 100)
+                                    4 / self.T_c / 400)
 
     def joint_spectral_amplitude(self, omega_1, omega_2):
         """Amplitude of the gaussian pulse.
@@ -220,8 +220,8 @@ class DoubleGaussianCoincidence:
         self.double_gaussian = param_dict["double_gaussian"]
 
         # set delay range (s)
-        self.delay_range = np.arange(-2.5 * self.double_gaussian.T_c, 2.5 * self.double_gaussian.T_c,
-                                     5 * self.double_gaussian.T_c / 100)
+        self.delay_range = np.arange(-5 * self.double_gaussian.T_c, 5 * self.double_gaussian.T_c,
+                                     10 * self.double_gaussian.T_c / 100)
 
     def coincidence_probability(self, delay):
         return 1 / 2 - 1 / 2 * np.exp(- delay ** 2 / 2 / self.double_gaussian.T_c ** 2)
@@ -231,18 +231,32 @@ class DoubleGaussianCoincidence:
         W1, W2 = np.meshgrid(ww, ww)
         JSA = self.double_gaussian.joint_spectral_amplitude(W1, W2)
 
-        fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(4, 8))
-        im0 = ax[0].pcolormesh((ww - self.double_gaussian.freq_range) * 1e-9 / twopi,
-                               (ww - self.double_gaussian.freq_range) * 1e-9 / twopi,
-                                np.abs(JSA) ** 2, shading='auto') #, norm=mpl.colors.LogNorm())
+        ticks = np.linspace(int(np.min((ww - self.double_gaussian.omega_c) * 1e-9 / twopi)),
+                            int(np.max((ww - self.double_gaussian.omega_c) * 1e-9 / twopi)),
+                            5)
+
+        fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(4.5, 8))
+        # im0 = ax[0].pcolormesh((W1 - self.double_gaussian.freq_range) * 1e-9 / twopi,
+        #                        (W2 - self.double_gaussian.freq_range) * 1e-9 / twopi,
+        #                         np.abs(JSA) ** 2, shading='gouraud') #, norm=mpl.colors.LogNorm())
+        im0 = ax[0].pcolormesh((W1 - self.double_gaussian.omega_c) * 1e-9 / twopi,
+                               (W2 - self.double_gaussian.omega_c) * 1e-9 / twopi,
+                               np.abs(JSA) ** 2,
+                               shading='gouraud',
+                               vmin=(np.abs(JSA).min()) ** 2,
+                               vmax=(np.abs(JSA).max()) ** 2,
+                               cmap='hot_r'
+                               )  # , norm=mpl.colors.LogNorm())
         ax[0].set_xlabel(r"$(\omega_1 - \overline{\omega})/2\pi$ (GHz)", fontsize=fs)
         ax[0].set_ylabel(r"$(\omega_2 - \overline{\omega})/2\pi$ (GHz)", fontsize=fs)
         ax[0].set_title(r"Joint spectral intensity", fontsize=fs)
         ax[0].tick_params(axis='both', labelsize=ts)
+        ax[0].set_yticks(ticks)
+        ax[0].set_xticks(ticks)
 
         plt.colorbar(im0, cax=make_axes_locatable(ax[0]).append_axes("right", size="5%", pad=0.05))
 
-        ax[1].plot(self.delay_range * 1e-12, self.coincidence_probability(self.delay_range),
+        ax[1].plot(self.delay_range * 1e12, self.coincidence_probability(self.delay_range),
                    linewidth=2,
                    color='black')
         ax[1].set_xlabel(r"$\tau$ (ps)", fontsize=fs)
