@@ -256,7 +256,7 @@ class DoubleGaussianCoincidence:
                    linewidth=2,
                    color='black')
         ax[1].set_xlabel(r"$\tau$ (ps)", fontsize=fs)
-        ax[1].set_ylabel(r"$p_\mathrm{II}^\mathrm{Gauss}$", fontsize=fs)
+        ax[1].set_ylabel(r"$p_\mathrm{DG}$", fontsize=fs)
         ax[1].tick_params(axis='both', labelsize=ts)
         ax[1].axhline(0, color='black', alpha=0.5)
         ax[1].axvline(0, color='black', alpha=0.5)
