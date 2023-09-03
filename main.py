@@ -232,9 +232,6 @@ class DoubleGaussianCoincidence:
                             5)
 
         fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(4.5, 8))
-        # im0 = ax[0].pcolormesh((W1 - self.double_gaussian.freq_range) * 1e-9 / twopi,
-        #                        (W2 - self.double_gaussian.freq_range) * 1e-9 / twopi,
-        #                         np.abs(JSA) ** 2, shading='gouraud') #, norm=mpl.colors.LogNorm())
         im0 = ax[0].pcolormesh((W1 - self.double_gaussian.omega_c) * 1e-9 / twopi,
                                (W2 - self.double_gaussian.omega_c) * 1e-9 / twopi,
                                np.abs(JSA) ** 2,
@@ -264,3 +261,69 @@ class DoubleGaussianCoincidence:
         plt.tight_layout()
         fig.savefig('figures/fig3.png', dpi=300, bbox_inches='tight')
         plt.show()
+
+
+def general_coincidence_pre(frequency1_range, dfreq1, frequency2_range, dfreq2, joint_spectral_amplitude, delay):
+    """coincidence probability.
+
+    Args:
+        frequency1_range (array) - range of the first frequency
+        dfreq1 (float) - step size of first frequency range
+        frequency2_range (array) - range of the second frequency
+        dfreq2 (float) - step size of second frequency range
+        joint_spectral_amplitude (array((len(frequency1_range), len(frequency2_range)))) - joint spectral amplitude
+        delay (array(len(delay))) - delay between photons
+
+    Returns:
+        coincidence probability array((delay))
+    """
+    FREQ1, FREQ2 = np.meshgrid(frequency1_range, frequency2_range)
+    phase = np.exp(-1j * (FREQ1 - FREQ2) * delay)
+    return 1 / 2 - 1 / 2 * np.sum(
+        np.conj(joint_spectral_amplitude) * joint_spectral_amplitude.T * phase) * dfreq1 * dfreq2
+
+
+general_coincidence = np.vectorize(general_coincidence_pre)
+
+
+class Sellmeier:
+    """Class for the index of refraction"""
+
+    def __init__(self, A1, A2, A3, A4):
+        """Constructor for the Sellmeier class.
+
+        Args:
+            (A1, A2, A3, A4) (float, float, float, float): Sellmeier parameters
+        """
+        self.A1 = A1
+        self.A2 = A2
+        self.A3 = A3
+        self.A4 = A4
+
+    def index(self, wavelength):
+        """Index of refraction.
+
+        Args:
+            wavelength (float): wavelength in micrometers
+        Returns:
+            array((len(wavelength)): index of refraction
+        """
+
+        return np.sqrt(self.A1 + self.A2 / (wavelength ** 2 - self.A3) - self.A4 * wavelength ** 2)
+
+
+def wave_number(sellmeier, frequency):
+    """wave-number calculator.
+
+    Args:
+        sellmeier (class): sellmeier class
+        frequency (float): frequencies
+
+    Returns:
+        array((len(frequency)): corresponding wave-number
+    """
+    # calculate wavelength in units of micrometers
+    wavelength = 2 * np.pi * speed_of_light * 1e6 / frequency
+
+    # return the wave-number
+    return frequency * sellmeier.index(wavelength) / speed_of_light
