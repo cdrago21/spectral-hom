@@ -14,7 +14,7 @@ mpl.rcParams['axes.unicode_minus'] = False
 fs = 14  # font size
 ts = 11  # tick size
 
-
+cmap = 'GnBu'
 class GaussianPulse:
     """class for a Gaussian pulse"""
 
@@ -238,7 +238,7 @@ class DoubleGaussianCoincidence:
                                shading='gouraud',
                                vmin=(np.abs(JSA).min()) ** 2,
                                vmax=(np.abs(JSA).max()) ** 2,
-                               cmap='hot_r'
+                               cmap=cmap
                                )  # , norm=mpl.colors.LogNorm())
         ax[0].set_xlabel(r"$(\omega_1 - \overline{\omega})/2\pi$ (GHz)", fontsize=fs)
         ax[0].set_ylabel(r"$(\omega_2 - \overline{\omega})/2\pi$ (GHz)", fontsize=fs)
