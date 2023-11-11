@@ -105,35 +105,35 @@ class IndependentGaussianCoincidence:
             ww = self.gaussian_a.freq_range
 
         fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(12, 4))
-        ax[0].plot(tt * 1e12, np.abs(self.gaussian_a.amplitude_time(tt)) ** 2,
+        ax[0].plot(tt * 1e12, np.abs(self.gaussian_a.amplitude_time(tt)) ** 2 * 1e-12,
                    linewidth=2,
                    label=r'$|\phi(t)|^2$',
                    color='black',
                    )
-        ax[0].plot(tt * 1e12, np.abs(self.gaussian_b.amplitude_time(tt)) ** 2,
+        ax[0].plot(tt * 1e12, np.abs(self.gaussian_b.amplitude_time(tt)) ** 2 * 1e-12,
                    linewidth=2,
                    label=r'$|\varphi(t)|^2$',
                    color='red',
                    linestyle='--',
                    )
         ax[0].set_xlabel("t (ps)", fontsize=fs)
-        ax[0].set_ylabel("Temporal intensity", fontsize=fs)
+        ax[0].set_ylabel("Temporal intensity (THz)", fontsize=fs)
         ax[0].tick_params(axis='both', labelsize=ts)
         ax[0].legend()
 
-        ax[1].plot((ww - self.gaussian_a.omega_c) * 1e-9 / twopi, np.abs(self.gaussian_a.amplitude_freq(ww)) ** 2,
+        ax[1].plot((ww - self.gaussian_a.omega_c) * 1e-9 / twopi, np.abs(self.gaussian_a.amplitude_freq(ww)) ** 2 * 1e12,
                    linewidth=2,
                    label=r'$|\phi(\omega)|^2$',
                    color='black',
                    )
-        ax[1].plot((ww - self.gaussian_a.omega_c) * 1e-9 / twopi, np.abs(self.gaussian_b.amplitude_freq(ww)) ** 2,
+        ax[1].plot((ww - self.gaussian_a.omega_c) * 1e-9 / twopi, np.abs(self.gaussian_b.amplitude_freq(ww)) ** 2 * 1e12,
                    linewidth=2,
                    label=r'$|\varphi(\omega)|^2$',
                    color='red',
                    linestyle='--',
                    )
         ax[1].set_xlabel(r"$(\omega - \overline{\omega}_a)/2\pi$ (GHz)", fontsize=fs)
-        ax[1].set_ylabel("Spectral intensity", fontsize=fs)
+        ax[1].set_ylabel("Spectral intensity (ps)", fontsize=fs)
         ax[1].tick_params(axis='both', labelsize=ts)
         ax[1].legend()
 
@@ -234,15 +234,15 @@ class DoubleGaussianCoincidence:
         fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(4.5, 8))
         im0 = ax[0].pcolormesh((W1 - self.double_gaussian.omega_c) * 1e-9 / twopi,
                                (W2 - self.double_gaussian.omega_c) * 1e-9 / twopi,
-                               np.abs(JSA) ** 2,
+                               np.abs(JSA) ** 2 * 1e12**2,
                                shading='gouraud',
-                               vmin=(np.abs(JSA).min()) ** 2,
-                               vmax=(np.abs(JSA).max()) ** 2,
+                               vmin=(np.abs(JSA).min()) ** 2 * 1e12**2,
+                               vmax=(np.abs(JSA).max()) ** 2 * 1e12**2,
                                cmap=cmap
                                )  # , norm=mpl.colors.LogNorm())
         ax[0].set_xlabel(r"$(\omega_1 - \overline{\omega})/2\pi$ (GHz)", fontsize=fs)
         ax[0].set_ylabel(r"$(\omega_2 - \overline{\omega})/2\pi$ (GHz)", fontsize=fs)
-        ax[0].set_title(r"Joint spectral intensity", fontsize=fs)
+        ax[0].set_title(r"Joint spectral intensity $(\mathrm{ps}^2)$", fontsize=fs)
         ax[0].tick_params(axis='both', labelsize=ts)
         ax[0].set_yticks(ticks)
         ax[0].set_xticks(ticks)
