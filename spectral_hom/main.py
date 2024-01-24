@@ -117,16 +117,16 @@ class IndependentGaussianCoincidence:
         fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(12, 3))
         ax[0].plot(tt * 1e12, np.abs(self.gaussian_a.amplitude_time(tt)) ** 2 * 1e-12,
                    linewidth=2,
-                   label=r'$|\phi(t)|^2$',
+                   label=r'$|\tilde\phi_a(t)|^2$',
                    color='black',
                    )
         ax[0].plot(tt * 1e12, np.abs(self.gaussian_b.amplitude_time(tt)) ** 2 * 1e-12,
                    linewidth=2,
-                   label=r'$|\varphi(t)|^2$',
+                   label=r'$|\tilde\phi_b(t)|^2$',
                    color='red',
                    linestyle='--',
                    )
-        ax[0].set_xlabel("t (ps)", fontsize=fs)
+        ax[0].set_xlabel("$t$ (ps)", fontsize=fs)
         ax[0].set_ylabel("Temporal intensity (THz)", fontsize=fs)
         ax[0].tick_params(axis='both', labelsize=ts)
         ax[0].text(0.05, 0.9, f'$\mathrm{{FWHM}}_a$={self.gaussian_a.FWHM} ps', fontsize=12, transform=ax[0].transAxes)
@@ -137,13 +137,13 @@ class IndependentGaussianCoincidence:
         ax[1].plot((ww - self.gaussian_a.omega_c) * 1e-9 / twopi,
                    np.abs(self.gaussian_a.amplitude_freq(ww)) ** 2 * 1e12,
                    linewidth=2,
-                   label=r'$|\phi(\omega)|^2$',
+                   label=r'$|\phi_a(\omega)|^2$',
                    color='black',
                    )
         ax[1].plot((ww - self.gaussian_a.omega_c) * 1e-9 / twopi,
                    np.abs(self.gaussian_b.amplitude_freq(ww)) ** 2 * 1e12,
                    linewidth=2,
-                   label=r'$|\varphi(\omega)|^2$',
+                   label=r'$|\phi_b(\omega)|^2$',
                    color='red',
                    linestyle='--',
                    )
@@ -151,15 +151,15 @@ class IndependentGaussianCoincidence:
         ax[1].set_ylabel("Spectral intensity (ps)", fontsize=fs)
         ax[1].tick_params(axis='both', labelsize=ts)
         D = (self.gaussian_a.omega_c - self.gaussian_b.omega_c) * 1e-9 / twopi
-        ax[1].text(0.05, 0.9, f'$\Delta$={D:.2f} GHz', fontsize=12, transform=ax[1].transAxes)
+        ax[1].text(0.05, 0.9, f"$\Delta={D:.2f}$ GHz", fontsize=12, transform=ax[1].transAxes)
         ax[1].set_xticks(f_ticks)
         ax[1].set_xlim(min(ww - self.gaussian_a.omega_c) * 1e-9 / twopi,
-                       max(ww - self.gaussian_a.omega_c) * 1e-9 / twopi)
+                   max(ww - self.gaussian_a.omega_c) * 1e-9 / twopi)
         ax[1].legend()
 
         ax[2].plot(self.delay_range * 1e12, self.coincidence_probability(self.delay_range),
-                   linewidth=2,
-                   color='black')
+               linewidth=2,
+               color='black')
         ax[2].set_xlabel(r"$\tau$ (ps)", fontsize=fs)
         ax[2].set_ylabel(r"$p_\mathrm{II}^\mathrm{Gauss}$", fontsize=fs)
         ax[2].tick_params(axis='both', labelsize=ts)
