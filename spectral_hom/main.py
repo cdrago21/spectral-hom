@@ -28,6 +28,8 @@ class GaussianPulse:
         self.lambda_c = param_dict["lambda_c"]
         self.FWHM = param_dict["FWHM"]
 
+
+
         self.omega_c = None
         self.sigma = None
         self.freq_range = None
@@ -96,7 +98,7 @@ class IndependentGaussianCoincidence:
                 self.gaussian_a.sigma ** 2 + self.gaussian_b.sigma ** 2)
         return 1 / 2 - pre_factor * temporal_exp * spectral_exp
 
-    def plot_coincidence(self):
+    def plot_coincidence(self, figname):
         if self.gaussian_a.FWHM > self.gaussian_b.FWHM:
             tt = self.gaussian_a.time_range
             ww = self.gaussian_b.freq_range
@@ -117,21 +119,24 @@ class IndependentGaussianCoincidence:
         fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(12, 3))
         ax[0].plot(tt * 1e12, np.abs(self.gaussian_a.amplitude_time(tt)) ** 2 * 1e-12,
                    linewidth=2,
-                   label=r'$|\tilde\phi_a(t)|^2$',
+                   label=r'$|\bar\phi_a(t)|^2$',
                    color='black',
                    )
         ax[0].plot(tt * 1e12, np.abs(self.gaussian_b.amplitude_time(tt)) ** 2 * 1e-12,
                    linewidth=2,
-                   label=r'$|\tilde\phi_b(t)|^2$',
+                   label=r'$|\bar\phi_b(t)|^2$',
                    color='red',
                    linestyle='--',
                    )
         ax[0].set_xlabel("$t$ (ps)", fontsize=fs)
         ax[0].set_ylabel("Temporal intensity (THz)", fontsize=fs)
         ax[0].tick_params(axis='both', labelsize=ts)
-        ax[0].text(0.05, 0.9, f'$\mathrm{{FWHM}}_a$={self.gaussian_a.FWHM} ps', fontsize=12, transform=ax[0].transAxes)
-        ax[0].text(0.05, 0.82, f'$\mathrm{{FWHM}}_b$={self.gaussian_b.FWHM} ps', fontsize=12, transform=ax[0].transAxes)
+        ax[0].text(0.05, 0.9, f'$\mathrm{{FWHM}}_a$={self.gaussian_a.FWHM} ps', fontsize=12, transform=ax[0].transAxes,
+                   bbox = dict(facecolor='white', edgecolor='white', boxstyle='round,pad=0.1'))
+        ax[0].text(0.05, 0.8, f'$\mathrm{{FWHM}}_b$={self.gaussian_b.FWHM} ps', fontsize=12, transform=ax[0].transAxes,
+                   bbox = dict(facecolor='white', edgecolor='white', boxstyle='round,pad=0.1'))
         ax[0].set_xticks(t_ticks)
+        ax[0].grid('on', alpha = 0.5)
         ax[0].legend()
 
         ax[1].plot((ww - self.gaussian_a.omega_c) * 1e-9 / twopi,
@@ -151,10 +156,12 @@ class IndependentGaussianCoincidence:
         ax[1].set_ylabel("Spectral intensity (ps)", fontsize=fs)
         ax[1].tick_params(axis='both', labelsize=ts)
         D = (self.gaussian_a.omega_c - self.gaussian_b.omega_c) * 1e-9 / twopi
-        ax[1].text(0.05, 0.9, f"$\Delta={D:.2f}$ GHz", fontsize=12, transform=ax[1].transAxes)
+        ax[1].text(0.05, 0.9, f"$\Delta={D:.2f}$ GHz", fontsize=12, transform=ax[1].transAxes,
+                   bbox = dict(facecolor='white', edgecolor='white', boxstyle='round,pad=0.1'))
         ax[1].set_xticks(f_ticks)
         ax[1].set_xlim(min(ww - self.gaussian_a.omega_c) * 1e-9 / twopi,
                    max(ww - self.gaussian_a.omega_c) * 1e-9 / twopi)
+        ax[1].grid('on', alpha = 0.5)
         ax[1].legend()
 
         ax[2].plot(self.delay_range * 1e12, self.coincidence_probability(self.delay_range),
@@ -166,9 +173,10 @@ class IndependentGaussianCoincidence:
         ax[2].axhline(0, color='black', alpha=0.5)
         ax[2].axvline(0, color='black', alpha=0.5)
         ax[2].set_xticks(tau_ticks)
+        ax[2].grid('on', alpha = 0.5)
 
         plt.tight_layout()
-        fig.savefig('figures/fig2.png', dpi=300, bbox_inches='tight')
+        fig.savefig(f"figures/{figname}.pdf", dpi=300, bbox_inches='tight')
         plt.show()
 
 
@@ -243,7 +251,7 @@ class DoubleGaussianCoincidence:
     def coincidence_probability(self, delay):
         return 1 / 2 - 1 / 2 * np.exp(- delay ** 2 / 2 / self.double_gaussian.T_c ** 2)
 
-    def plot_coincidence(self):
+    def plot_coincidence(self, figname1, figname2):
         ww = self.double_gaussian.freq_range
         W1, W2 = np.meshgrid(ww, ww)
         JSA = self.double_gaussian.joint_spectral_amplitude(W1, W2)
@@ -252,8 +260,8 @@ class DoubleGaussianCoincidence:
                             int(np.max((ww - self.double_gaussian.omega_c) * 1e-9 / twopi)),
                             5)
 
-        fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(4.5, 8))
-        im0 = ax[0].pcolormesh((W1 - self.double_gaussian.omega_c) * 1e-9 / twopi,
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4.5, 4))
+        im0 = ax.pcolormesh((W1 - self.double_gaussian.omega_c) * 1e-9 / twopi,
                                (W2 - self.double_gaussian.omega_c) * 1e-9 / twopi,
                                np.abs(JSA) ** 2 * 1e12**2,
                                shading='gouraud',
@@ -261,26 +269,29 @@ class DoubleGaussianCoincidence:
                                vmax=(np.abs(JSA).max()) ** 2 * 1e12**2,
                                cmap=cmap
                                )  # , norm=mpl.colors.LogNorm())
-        ax[0].set_xlabel(r"$(\omega_1 - \overline{\omega})/2\pi$ (GHz)", fontsize=fs)
-        ax[0].set_ylabel(r"$(\omega_2 - \overline{\omega})/2\pi$ (GHz)", fontsize=fs)
-        ax[0].set_title(r"Joint spectral intensity $(\mathrm{ps}^2)$", fontsize=fs)
-        ax[0].tick_params(axis='both', labelsize=ts)
-        ax[0].set_yticks(ticks)
-        ax[0].set_xticks(ticks)
+        ax.set_xlabel(r"$(\omega_1 - \overline{\omega})/2\pi$ (GHz)", fontsize=fs)
+        ax.set_ylabel(r"$(\omega_2 - \overline{\omega})/2\pi$ (GHz)", fontsize=fs)
+        ax.set_title(r"Joint spectral intensity $(\mathrm{ps}^2)$", fontsize=fs)
+        ax.tick_params(axis='both', labelsize=ts)
+        ax.set_yticks(ticks)
+        ax.set_xticks(ticks)
+        plt.colorbar(im0, cax=make_axes_locatable(ax).append_axes("right", size="5%", pad=0.05))
+        plt.tight_layout()
+        fig.savefig(f'figures/{figname1}.pdf', dpi=300, bbox_inches='tight')
+        plt.show()
 
-        plt.colorbar(im0, cax=make_axes_locatable(ax[0]).append_axes("right", size="5%", pad=0.05))
-
-        ax[1].plot(self.delay_range * 1e12, self.coincidence_probability(self.delay_range),
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4.5, 4))
+        ax.plot(self.delay_range * 1e12, self.coincidence_probability(self.delay_range),
                    linewidth=2,
                    color='black')
-        ax[1].set_xlabel(r"$\tau$ (ps)", fontsize=fs)
-        ax[1].set_ylabel(r"$p_\mathrm{DG}$", fontsize=fs)
-        ax[1].tick_params(axis='both', labelsize=ts)
-        ax[1].axhline(0, color='black', alpha=0.5)
-        ax[1].axvline(0, color='black', alpha=0.5)
-
+        ax.set_xlabel(r"$\tau$ (ps)", fontsize=fs)
+        ax.set_ylabel(r"$p_\mathrm{DG}$", fontsize=fs)
+        ax.tick_params(axis='both', labelsize=ts)
+        ax.axhline(0, color='black', alpha=0.5)
+        ax.axvline(0, color='black', alpha=0.5)
+        ax.grid('on', alpha = 0.5)
         plt.tight_layout()
-        fig.savefig('figures/fig3.png', dpi=300, bbox_inches='tight')
+        fig.savefig(f'figures/{figname2}.pdf', dpi=300, bbox_inches='tight')
         plt.show()
 
 
