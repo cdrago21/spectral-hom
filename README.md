@@ -14,7 +14,8 @@ Spectral HOM has the following dependencies:
 You can compile the latest development version by cloning the git repository, and installing using pip in development mode.
 ```
 git clone https://github.com/cdrago21/spectral-hom.git
-cd spectral-hom && python -m pip install -e .
+cd spectral-hom
+pip install -e .
 ```
 ## Examples and related material
 
