@@ -25,6 +25,4 @@ The directory contains the following supporting material:
 | --- | --- |
 |Christian Drago and Agata M. Brańczyk. "Hong-Ou-Mandel Interference: A spectral-temporal analysis" *To be published* | [Fig 2](/examples/figure-2.ipynb),[Fig 3](/examples/figure-3.ipynb),[Fig 4](/examples/figure-4.ipynb),[Fig 5](/examples/figure-5.ipynb) |
 
-## References
-
 
