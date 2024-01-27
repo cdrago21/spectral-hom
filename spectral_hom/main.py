@@ -117,19 +117,19 @@ class IndependentGaussianCoincidence:
         tau_ticks = np.round(np.linspace(-tau_lim, tau_lim, 7), 0)
 
         fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(12, 3))
-        ax[0].plot(tt * 1e12, np.abs(self.gaussian_a.amplitude_time(tt)) ** 2 * 1e-12,
+        ax[0].plot(tt * 1e12, np.abs(self.gaussian_a.amplitude_time(tt)) / np.max(np.abs(self.gaussian_a.amplitude_time(tt))),
                    linewidth=2,
-                   label=r'$|\bar\phi_a(t)|^2$',
+                   label=r'$|\bar\phi_a(t)|$',
                    color='black',
                    )
-        ax[0].plot(tt * 1e12, np.abs(self.gaussian_b.amplitude_time(tt)) ** 2 * 1e-12,
+        ax[0].plot(tt * 1e12, np.abs(self.gaussian_b.amplitude_time(tt)) / np.max(np.abs(self.gaussian_b.amplitude_time(tt))),
                    linewidth=2,
-                   label=r'$|\bar\phi_b(t)|^2$',
+                   label=r'$|\bar\phi_b(t)|$',
                    color='red',
                    linestyle='--',
                    )
         ax[0].set_xlabel("$t$ (ps)", fontsize=fs)
-        ax[0].set_ylabel("Temporal intensity (THz)", fontsize=fs)
+        ax[0].set_ylabel(r"$|$Temporal amplitude$|$", fontsize=fs)
         ax[0].tick_params(axis='both', labelsize=ts)
         ax[0].text(0.05, 0.9, f'$\mathrm{{FWHM}}_a$={self.gaussian_a.FWHM} ps', fontsize=12, transform=ax[0].transAxes,
                    bbox = dict(facecolor='white', edgecolor='white', boxstyle='round,pad=0.1'))
@@ -137,23 +137,23 @@ class IndependentGaussianCoincidence:
                    bbox = dict(facecolor='white', edgecolor='white', boxstyle='round,pad=0.1'))
         ax[0].set_xticks(t_ticks)
         ax[0].grid('on', alpha = 0.5)
-        ax[0].legend()
+        ax[0].legend(loc = 'upper right', prop={'size': 12})
 
         ax[1].plot((ww - self.gaussian_a.omega_c) * 1e-9 / twopi,
-                   np.abs(self.gaussian_a.amplitude_freq(ww)) ** 2 * 1e12,
+                   np.abs(self.gaussian_a.amplitude_freq(ww)) / np.max(np.abs(self.gaussian_a.amplitude_freq(ww))),
                    linewidth=2,
-                   label=r'$|\phi_a(\omega)|^2$',
+                   label=r'$|\phi_a(\omega)|$',
                    color='black',
                    )
         ax[1].plot((ww - self.gaussian_a.omega_c) * 1e-9 / twopi,
-                   np.abs(self.gaussian_b.amplitude_freq(ww)) ** 2 * 1e12,
+                   np.abs(self.gaussian_b.amplitude_freq(ww)) / np.max(np.abs(self.gaussian_b.amplitude_freq(ww))),
                    linewidth=2,
-                   label=r'$|\phi_b(\omega)|^2$',
+                   label=r'$|\phi_b(\omega)|$',
                    color='red',
                    linestyle='--',
                    )
         ax[1].set_xlabel(r"$(\omega - \overline{\omega}_a)/2\pi$ (GHz)", fontsize=fs)
-        ax[1].set_ylabel("Spectral intensity (ps)", fontsize=fs)
+        ax[1].set_ylabel(r"$|$Spectral amplitude$|$", fontsize=fs)
         ax[1].tick_params(axis='both', labelsize=ts)
         D = (self.gaussian_a.omega_c - self.gaussian_b.omega_c) * 1e-9 / twopi
         ax[1].text(0.05, 0.9, f"$\Delta={D:.2f}$ GHz", fontsize=12, transform=ax[1].transAxes,
@@ -162,13 +162,13 @@ class IndependentGaussianCoincidence:
         ax[1].set_xlim(min(ww - self.gaussian_a.omega_c) * 1e-9 / twopi,
                    max(ww - self.gaussian_a.omega_c) * 1e-9 / twopi)
         ax[1].grid('on', alpha = 0.5)
-        ax[1].legend()
+        ax[1].legend(loc = 'upper right', prop={'size': 12})
 
         ax[2].plot(self.delay_range * 1e12, self.coincidence_probability(self.delay_range),
                linewidth=2,
                color='black')
         ax[2].set_xlabel(r"$\tau$ (ps)", fontsize=fs)
-        ax[2].set_ylabel(r"$p_\mathrm{II}^\mathrm{Gauss}$", fontsize=fs)
+        ax[2].set_ylabel(r"$p_\mathrm{G}$", fontsize=fs)
         ax[2].tick_params(axis='both', labelsize=ts)
         ax[2].axhline(0, color='black', alpha=0.5)
         ax[2].axvline(0, color='black', alpha=0.5)
@@ -180,7 +180,7 @@ class IndependentGaussianCoincidence:
         plt.show()
 
 
-class DoubleGaussianJSA:
+class JointGaussianJSA:
     """class for a double Gaussian joint-spectral amplitude"""
 
     def __init__(self, param_dict):
@@ -230,7 +230,7 @@ class DoubleGaussianJSA:
         return pre_factor * left_term * right_term
 
 
-class DoubleGaussianCoincidence:
+class JointGaussianCoincidence:
     """class for the coincidence probability from independent photons with Gaussian amplitudes"""
 
     def __init__(self, param_dict):
@@ -263,19 +263,16 @@ class DoubleGaussianCoincidence:
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4.5, 4))
         im0 = ax.pcolormesh((W1 - self.double_gaussian.omega_c) * 1e-9 / twopi,
                                (W2 - self.double_gaussian.omega_c) * 1e-9 / twopi,
-                               np.abs(JSA) ** 2 * 1e12**2,
+                               np.abs(JSA) / np.max(np.abs(JSA)),
                                shading='gouraud',
-                               vmin=(np.abs(JSA).min()) ** 2 * 1e12**2,
-                               vmax=(np.abs(JSA).max()) ** 2 * 1e12**2,
-                               cmap=cmap
-                               )  # , norm=mpl.colors.LogNorm())
+                               cmap=cmap)
         ax.set_xlabel(r"$(\omega_1 - \overline{\omega})/2\pi$ (GHz)", fontsize=fs)
         ax.set_ylabel(r"$(\omega_2 - \overline{\omega})/2\pi$ (GHz)", fontsize=fs)
-        ax.set_title(r"Joint spectral intensity $(\mathrm{ps}^2)$", fontsize=fs)
+        ax.set_title(r"$|$Joint spectral amplitude$|$", fontsize=fs)
         ax.tick_params(axis='both', labelsize=ts)
         ax.set_yticks(ticks)
         ax.set_xticks(ticks)
-        plt.colorbar(im0, cax=make_axes_locatable(ax).append_axes("right", size="5%", pad=0.05))
+        plt.colorbar(im0, cax=make_axes_locatable(ax).append_axes("right", size="5%", pad=0.025))
         plt.tight_layout()
         fig.savefig(f'figures/{figname1}.pdf', dpi=300, bbox_inches='tight')
         plt.show()
@@ -285,7 +282,7 @@ class DoubleGaussianCoincidence:
                    linewidth=2,
                    color='black')
         ax.set_xlabel(r"$\tau$ (ps)", fontsize=fs)
-        ax.set_ylabel(r"$p_\mathrm{DG}$", fontsize=fs)
+        ax.set_ylabel(r"$p_\mathrm{JG}$", fontsize=fs)
         ax.tick_params(axis='both', labelsize=ts)
         ax.axhline(0, color='black', alpha=0.5)
         ax.axvline(0, color='black', alpha=0.5)
