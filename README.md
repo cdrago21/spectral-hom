@@ -6,10 +6,13 @@ The `spectral-hom` module can be used to plot Hong-Ou-Mandel coincidence probabi
 
 Spectral HOM has the following dependencies:
 
-- matplotlib>=3.2.2
-- scipy
-- numpy
-- jupyter (to run the example notebooks)
+- python == 3.12.1
+- matplotlib == 3.8.2
+- scipy == 1.12.0
+- numpy == 1.26.3
+- jupyter == 1.0.0 (to run the example notebooks)
+
+It likely works with others versions, but has not been tested yet. 
   
 You can compile the latest development version by cloning the git repository, and installing using pip in development mode.
 ```
